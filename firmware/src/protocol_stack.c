@@ -1,5 +1,7 @@
 #include "protocol_stack.h"
 #include "platform_linux.h"
+#include "sf_protocol.h"
+#include "routing_table.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -30,7 +32,17 @@ int sf_stack_run(void) {
 }
 
 int sf_stack_self_test(void) {
-    printf("SentryFlow firmware self-test: OK (protocol stack wired)\n");
+    int ok = 1;
+    if (sf_proto_self_test() != 0) {
+        fprintf(stderr, "self-test failed: protocol framing\n");
+        ok = 0;
+    }
+    if (sf_route_table_self_test() != 0) {
+        fprintf(stderr, "self-test failed: routing table\n");
+        ok = 0;
+    }
+    if (!ok) return 1;
+    printf("SentryFlow firmware self-test: OK\n");
     return 0;
 }
 

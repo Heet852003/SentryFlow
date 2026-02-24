@@ -28,17 +28,18 @@ The repository is intentionally structured to demonstrate end‑to‑end skills 
 ## Repository Layout
 
 - `firmware/` – C/C++ network stack and embedded Linux entrypoints  
-  - `include/` – public headers (`protocol_stack.h`, `routing.h`, `platform.h`)  
-  - `src/` – implementations (simple TCP/IP server, routing strategy stubs, platform layer for Linux)  
-  - `tests/` – unit-style tests and basic harnesses  
-  - `Makefile` – builds firmware binaries and tests on Linux/WSL
+  - `include/` – public headers (protocol framing, routing table, HAL)  
+  - `src/` – implementations (CRC/framing, route table/LPM, epoll platform loop, command handlers)  
+  - `Makefile` – builds firmware binary and runs self-tests on Linux/WSL
 - `tools/` – Python automation tools and benchmarking scripts  
-  - `traffic_generator.py` – generates synthetic TCP traffic (1000+ requests/day scenario)  
-  - `latency_benchmark.py` – measures end‑to‑end latency, aiming for \< 100ms median  
-  - `ci_checks.py` – lightweight DevSecOps helpers (lint, simple config checks)
-- `scripts/` – Bash scripts for running firmware, tests, and benchmarks locally
+  - `sentryflow_protocol.py` / `sentryflow_client.py` – reference client + protocol implementation  
+  - `traffic_generator.py` – concurrent framed-protocol traffic generation (1000+ requests/day scenario)  
+  - `latency_benchmark.py` – latency benchmark (min/median/p95) targeting \< 100ms median  
+  - `ci_checks.py` – CI helper (syntax checks + pytest)
+- `scripts/` – convenience scripts for running the firmware locally
 - `Jenkinsfile` – Jenkins pipeline definition (build + test + security checks)
 - `.github/workflows/ci.yml` – GitHub Actions CI definition
+- `docs/` – architecture, protocol, and routing notes
 
 Legacy web/API components from the previous version of SentryFlow have been removed or deprecated; the focus is now fully on **networking + embedded systems**.
 
@@ -65,16 +66,16 @@ cd firmware
 make            # builds the main firmware binary and tests
 ```
 
-This will produce a binary such as `build/sentryflow_firmware` that runs a simple TCP/IP service and hooks into the routing/platform layers.
+This will produce `build/bin/sentryflow_firmware`, a non-blocking TCP server that speaks SentryFlow’s framed binary protocol (see `docs/PROTOCOL.md`).
 
 ### Run the Firmware Locally
 
 ```bash
 cd firmware
-make run        # or ./build/sentryflow_firmware
+make run        # or ./build/bin/sentryflow_firmware
 ```
 
-By default, the firmware listens on a configurable TCP port (see `firmware/include/protocol_stack.h`), accepts simple text requests, and echoes structured responses with timestamps to simulate on‑device request handling.
+By default, the firmware listens on port 9000 and handles framed messages like `PING`, `ECHO`, `GET_STATS`, and route update/lookup commands.
 
 ---
 

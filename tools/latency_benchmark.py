@@ -1,23 +1,32 @@
 import argparse
+import asyncio
 import statistics
-import socket
 import time
 
+from sentryflow_client import Msg, request_once
 
-def measure_latency(host: str, port: int, count: int) -> None:
-    samples = []
-    for i in range(count):
-        start = time.time()
-        try:
-            with socket.create_connection((host, port), timeout=2.0) as s:
-                s.sendall(f"ping-{i}".encode("utf-8"))
-                _ = s.recv(1024)
-        except OSError as exc:
-            print(f"request {i} failed: {exc}")
-            continue
-        end = time.time()
-        samples.append((end - start) * 1000.0)
+async def measure_latency(host: str, port: int, count: int, concurrency: int) -> list[float]:
+    sem = asyncio.Semaphore(max(1, concurrency))
+    samples: list[float] = []
 
+    async def one(i: int) -> None:
+        payload = f"ping-{i}".encode("utf-8")
+        async with sem:
+            start = time.perf_counter()
+            try:
+                msg_type, _ = await request_once(host, port, Msg.PING, payload, seq=i + 1)
+                if msg_type != Msg.PONG:
+                    raise RuntimeError(f"expected PONG, got {msg_type}")
+            except Exception as exc:
+                print(f"request {i} failed: {exc}")
+                return
+            end = time.perf_counter()
+            samples.append((end - start) * 1000.0)
+
+    await asyncio.gather(*(one(i) for i in range(count)))
+    return samples
+
+def summarize(samples: list[float]) -> None:
     if not samples:
         print("no successful samples")
         return
@@ -37,14 +46,16 @@ def measure_latency(host: str, port: int, count: int) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Measure end-to-end latency against SentryFlow firmware."
+        description="Measure end-to-end latency (framed protocol) against SentryFlow firmware."
     )
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=9000)
     parser.add_argument("--requests", type=int, default=500)
+    parser.add_argument("--concurrency", type=int, default=10)
     args = parser.parse_args()
 
-    measure_latency(args.host, args.port, args.requests)
+    samples = asyncio.run(measure_latency(args.host, args.port, args.requests, args.concurrency))
+    summarize(samples)
 
 
 if __name__ == "__main__":

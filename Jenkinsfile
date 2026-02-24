@@ -26,6 +26,18 @@ pipeline {
             }
         }
 
+        stage('Static Analysis (cppcheck)') {
+            steps {
+                sh '''
+                  if command -v cppcheck >/dev/null 2>&1; then
+                    cppcheck --enable=warning,style,performance,portability --error-exitcode=1 firmware/src firmware/include
+                  else
+                    echo "cppcheck not installed; skipping"
+                  fi
+                '''
+            }
+        }
+
         stage('Python Tooling Checks') {
             steps {
                 sh '''

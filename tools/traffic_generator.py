@@ -1,34 +1,46 @@
 import argparse
-import socket
+import asyncio
 import time
 
+from sentryflow_client import Msg, request_once
 
-def send_request(host: str, port: int, payload: str) -> float:
-    start = time.time()
-    with socket.create_connection((host, port), timeout=2.0) as s:
-        s.sendall(payload.encode("utf-8"))
-        _ = s.recv(1024)
-    end = time.time()
+
+async def send_request(host: str, port: int, payload: bytes, seq: int) -> float:
+    start = time.perf_counter()
+    msg_type, _ = await request_once(host, port, Msg.ECHO, payload, seq=seq)
+    end = time.perf_counter()
+    if msg_type not in (Msg.ECHO_REPLY, Msg.ERROR):
+        raise RuntimeError(f"unexpected response type: {msg_type}")
     return (end - start) * 1000.0
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Generate synthetic TCP traffic against SentryFlow firmware."
+        description="Generate synthetic framed-protocol TCP traffic against SentryFlow firmware."
     )
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=9000)
     parser.add_argument("--requests", type=int, default=1500)
+    parser.add_argument("--concurrency", type=int, default=50)
     args = parser.parse_args()
 
-    latencies = []
-    for i in range(args.requests):
-        msg = f"req-{i}"
-        try:
-            lat = send_request(args.host, args.port, msg)
-            latencies.append(lat)
-        except OSError as exc:
-            print(f"request {i} failed: {exc}")
+    async def run() -> list[float]:
+        sem = asyncio.Semaphore(max(1, args.concurrency))
+        latencies: list[float] = []
+
+        async def one(i: int) -> None:
+            payload = f"req-{i}".encode("utf-8")
+            async with sem:
+                try:
+                    lat = await send_request(args.host, args.port, payload, seq=i + 1)
+                    latencies.append(lat)
+                except Exception as exc:
+                    print(f"request {i} failed: {exc}")
+
+        await asyncio.gather(*(one(i) for i in range(args.requests)))
+        return latencies
+
+    latencies = asyncio.run(run())
 
     if not latencies:
         print("no successful requests")

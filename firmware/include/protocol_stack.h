@@ -7,6 +7,8 @@ typedef struct sf_request_stats {
     uint64_t total_requests;
     double   last_latency_ms;
     double   avg_latency_ms;
+    uint64_t bad_frames;
+    uint64_t routes_installed;
 } sf_request_stats_t;
 
 int  sf_stack_init(const char *bind_addr, uint16_t port);

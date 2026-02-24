@@ -40,13 +40,9 @@ Enhancement suggestions are also tracked as GitHub issues. When suggesting an en
 
 ### Prerequisites
 
-- Python 3.8+
-- Node.js 16+
-- Docker and Docker Compose
-- PostgreSQL
-- Redis
-- Kafka
-- ClickHouse
+- Linux or WSL2 recommended (the firmware uses `epoll`)
+- GCC/Clang + `make`
+- Python 3.10+
 
 ### Local Development
 
@@ -56,110 +52,44 @@ Enhancement suggestions are also tracked as GitHub issues. When suggesting an en
    cd sentryflow
    ```
 
-2. Set up environment files
-   ```bash
-   cp backend/.env.example backend/.env
-   cp aggregator/.env.example aggregator/.env
-   cp frontend/.env.example frontend/.env
-   ```
-
-3. Install dependencies
-   ```bash
-   # Backend
-   cd backend
-   pip install -r requirements.txt
-   
-   # Aggregator
-   cd ../aggregator
-   pip install -r requirements.txt
-   
-   # Frontend
-   cd ../frontend
-   npm install
-   ```
-
-4. Start services using Docker Compose
-   ```bash
-   docker-compose up -d postgres redis kafka clickhouse
-   ```
-
-5. Set up databases
-   ```bash
-   cd backend
-   python setup_db.py
-   
-   cd ../aggregator
-   python setup_clickhouse.py
-   ```
-
-6. Run the services
-   ```bash
-   # Backend
-   cd backend
-   uvicorn main:app --reload --host 0.0.0.0 --port 8000
-   
-   # Aggregator
-   cd aggregator
-   python batch_consumer.py
-   
-   # Frontend
-   cd frontend
-   npm start
-   ```
-
-Alternatively, you can use the provided Makefile commands:
+2. Build and run the firmware
 ```bash
-make setup      # Set up the project
-make dev-backend    # Run backend in development mode
-make dev-aggregator # Run aggregator in development mode
-make dev-frontend   # Run frontend in development mode
+cd firmware
+make all
+make run
 ```
 
 ## Testing
 
-Run tests for each component:
+Run firmware unit tests and self-test:
 
 ```bash
-# Backend tests
-cd backend
-pytest
-
-# Aggregator tests
-cd aggregator
-pytest
-
-# Frontend tests
-cd frontend
-npm test
+cd firmware
+make test
 ```
 
-Or use the Makefile:
+Run Python tooling tests:
+
 ```bash
-make test           # Run all tests
-make test-backend   # Run backend tests only
-make test-aggregator # Run aggregator tests only
-make test-frontend  # Run frontend tests only
+cd tools
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+python -m pytest
 ```
 
 ## Code Style
 
+### C/C++
+
+- Prefer small, testable modules under `firmware/src/`
+- Keep platform-specific code in the platform layer (`platform_linux.c`, `hal_linux.c`)
+- Avoid compiler extensions unless necessary
+
 ### Python
 
-We follow PEP 8 style guidelines for Python code. Use `flake8` to check your code:
-
-```bash
-cd backend  # or aggregator
-flake8
-```
-
-### JavaScript/React
-
-We use ESLint and Prettier for JavaScript/React code. Check your code with:
-
-```bash
-cd frontend
-npm run lint
-```
+- Keep protocol handling in `tools/sentryflow_protocol.py` and `tools/sentryflow_client.py`
+- Add tests under `tools/tests/`
 
 ## Documentation
 
@@ -167,8 +97,7 @@ Please update the documentation when you make changes to the code. This includes
 
 - Code comments
 - README.md updates
-- API documentation
-- User guides
+- `docs/` (protocol/routing/architecture)
 
 ## Commit Messages
 
