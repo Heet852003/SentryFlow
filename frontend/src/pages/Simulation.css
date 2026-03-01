@@ -1,0 +1,32 @@
+.sim-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.sim-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.sim-form select,
+.sim-form input {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-deep);
+  color: var(--text);
+  min-width: 120px;
+}
+
+.sim-form input { width: 100px; }
+
+.stats-list { list-style: none; margin: 0; padding: 0; }
+.stats-list li { padding: 0.25rem 0; }
+.result-card .muted { font-size: 0.85rem; color: var(--text-muted); margin: 0.5rem 0 0; }
+.card-error { border-color: var(--error); background: rgba(248, 81, 73, 0.08); margin-bottom: 1rem; }

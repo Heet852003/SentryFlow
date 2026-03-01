@@ -1,0 +1,55 @@
+# SentryFlow – Digital Twin Simulation & Validation
+# Python, React, TypeScript, Docker, C++, Java
+# Supports 1000+ users; run: docker-compose up -d
+
+services:
+  engine:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.engine
+    ports:
+      - "9000:9000"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9000"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  validation:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.validation
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      SENTRYFLOW_ENGINE_HOST: engine
+      SENTRYFLOW_ENGINE_PORT: "9000"
+      SENTRYFLOW_VALIDATION_URL: http://validation:8080
+    depends_on:
+      engine: { condition: service_started }
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+      target: runner
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    restart: unless-stopped

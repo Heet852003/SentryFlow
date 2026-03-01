@@ -1,0 +1,22 @@
+# SentryFlow API (Python FastAPI) – REST gateway for Digital Twin Simulation & Validation
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY api/requirements.txt /app/api/
+COPY tools /app/tools/
+
+RUN pip install --no-cache-dir -r /app/api/requirements.txt
+
+COPY api /app/api/
+
+# Frontend static files optional: copy when building with context that has frontend/dist
+# COPY frontend/dist /app/frontend/dist
+
+ENV PYTHONPATH=/app:/app/tools
+ENV SENTRYFLOW_ENGINE_HOST=engine
+ENV SENTRYFLOW_ENGINE_PORT=9000
+
+EXPOSE 8000
+
+CMD ["python", "-m", "uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]

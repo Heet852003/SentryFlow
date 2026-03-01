@@ -1,0 +1,80 @@
+.page h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.page .lead {
+  color: var(--text-muted);
+  margin: 0 0 1.5rem;
+  max-width: 60ch;
+}
+
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.model-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.model-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.model-card h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.model-desc {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.model-meta {
+  margin: 0.5rem 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.model-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+}
+
+.badge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.badge-draft { background: var(--bg-elevated); color: var(--text-muted); }
+.badge-validated { background: rgba(63, 185, 80, 0.2); color: var(--success); }
+.badge-deployed { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+
+.btn-sm {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.85rem;
+}
+
+.card-error {
+  border-color: var(--error);
+  background: rgba(248, 81, 73, 0.08);
+  margin-bottom: 1rem;
+}
+
+.muted { color: var(--text-muted); margin: 0; }

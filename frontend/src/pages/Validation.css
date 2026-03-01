@@ -1,0 +1,44 @@
+.validation-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.validation-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.validation-form select {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-deep);
+  color: var(--text);
+  min-width: 200px;
+}
+
+.result-card.passed { border-color: var(--success); background: rgba(63, 185, 80, 0.06); }
+.result-card.failed { border-color: var(--error); background: rgba(248, 81, 73, 0.06); }
+
+.result-card h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+.result-card .muted { margin: 0 0 0.75rem; font-size: 0.85rem; }
+
+.checks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checks li { padding: 0.25rem 0; }
+.checks .ok { color: var(--success); }
+.checks .fail { color: var(--error); }
+.checks .msg { color: var(--text-muted); font-size: 0.9rem; }
+
+.card-error { border-color: var(--error); background: rgba(248, 81, 73, 0.08); margin-bottom: 1rem; }
+.muted { color: var(--text-muted); }

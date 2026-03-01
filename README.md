@@ -1,158 +1,109 @@
-## SentryFlow – Network Protocol & Embedded Systems Platform | C, Python, Linux, Jenkins, GitHub (W 2025)
+# SentryFlow – Digital Twin Simulation & Validation
 
-SentryFlow is a **network protocol and embedded systems experimentation platform** focused on:
+**Python · React · TypeScript · Docker · C++ · Java · 2025**
 
-- **TCP/IP networking on embedded Linux using C/C++**
-- **Routing protocol experimentation**
-- **Firmware and low-level system software development**
-- **Python/Bash automation and DevSecOps pipelines (Jenkins + GitHub Actions)**
-
-This repository is structured specifically to back up the following experience description:
-
-- Engineered network protocol stack using C and C++ on embedded Linux, implementing TCP/IP protocols and routing protocols, building CI/CD pipelines with Jenkins and GitHub Actions, processing 1000+ requests/day.
-- Developed firmware components and low-level system software, implemented automation tools using Python and Bash scripting, integrated DevSecOps practices, achieving < 100ms response latency.
-- Built hardware-software integration layer, managed development, testing, and deployment workflows across Linux-based embedded environments.
-
-The repository is intentionally structured to demonstrate end‑to‑end skills across firmware, tooling, CI/CD, and secure automation rather than to be a full production product.
-
-### High‑Level Highlights
-
-- **Engineered network protocol stack** using C and C++ on embedded Linux, implementing TCP/IP–based services and pluggable routing logic.
-- **CI/CD pipelines** using Jenkins and GitHub Actions to build, test, and lint the C firmware and Python automation tools, targeting **1000+ requests/day** workloads.
-- **Firmware and low‑level system software** components providing a hardware–software abstraction layer and basic telemetry.
-- **Automation tooling** in Python and Bash to run load tests, generate traffic, and collect latency metrics, targeting **\< 100ms response latency** under normal load.
-- **DevSecOps integration**, including basic security checks (static checks, dependency scans) wired into CI.
+SentryFlow is a **Digital Twin Simulation & Validation** platform for creating and validating digital twin models, running simulations against a high-performance engine, and managing deployment at scale (1000+ users).
 
 ---
 
-## Repository Layout
+## Highlights
 
-- `firmware/` – C/C++ network stack and embedded Linux entrypoints  
-  - `include/` – public headers (protocol framing, routing table, HAL)  
-  - `src/` – implementations (CRC/framing, route table/LPM, epoll platform loop, command handlers)  
-  - `Makefile` – builds firmware binary and runs self-tests on Linux/WSL
-- `tools/` – Python automation tools and benchmarking scripts  
-  - `sentryflow_protocol.py` / `sentryflow_client.py` – reference client + protocol implementation  
-  - `traffic_generator.py` – concurrent framed-protocol traffic generation (1000+ requests/day scenario)  
-  - `latency_benchmark.py` – latency benchmark (min/median/p95) targeting \< 100ms median  
-  - `ci_checks.py` – CI helper (syntax checks + pytest)
-- `scripts/` – convenience scripts for running the firmware locally
-- `Jenkinsfile` – Jenkins pipeline definition (build + test + security checks)
-- `.github/workflows/ci.yml` – GitHub Actions CI definition
-- `docs/` – architecture, protocol, and routing notes
-
-Legacy web/API components from the previous version of SentryFlow have been removed or deprecated; the focus is now fully on **networking + embedded systems**.
+- **Digital Twin models** – Create, validate, and deploy digital twin models with a React + TypeScript frontend (HTML5, JavaScript ES6).
+- **Simulation engine** – C++ firmware and TCP binary protocol for low-latency simulation; Java validation service for model checks.
+- **REST API** – Python (FastAPI) gateway for the frontend and automation, with health, stats, validation, and simulation endpoints.
+- **Automation & QA** – Python scripts for automation testing, simulation engine validation, traffic generation (1000+ requests), and latency benchmarking (&lt; 100 ms target).
+- **Docker** – Full stack deployment via Docker Compose: engine, API, validation service, and frontend.
+- **Technical documentation** – Architecture, protocol, API reference, tutorials, and QA procedures.
 
 ---
 
-## Getting Started
+## Repository layout
 
-### Prerequisites
+| Path | Description |
+|------|-------------|
+| **frontend/** | React + TypeScript + Vite – Digital Twin dashboard (models, validation, simulation monitor) |
+| **api/** | Python FastAPI – REST API and gateway to C++ engine |
+| **firmware/** | C/C++ simulation engine – TCP server, protocol framing, routing |
+| **simulation-engine/** | Java validation service – HTTP API for model validation |
+| **tools/** | Python automation – protocol client, traffic generator, latency benchmark, validation script, pytest |
+| **docker/** | Dockerfiles (engine, API, frontend, validation) |
+| **docs/** | ARCHITECTURE, PROTOCOL, ROUTING, API, TUTORIAL, QA |
 
-- A Linux environment (native, WSL2, or container)
-- `gcc` or `clang` toolchain for C/C++
-- Python 3.10+
-- `make`
+---
 
-Optional (for CI/CD demo):
-
-- Jenkins with access to this repository
-- GitHub repository with Actions enabled
-
-### Build the Firmware
+## Quick start (Docker)
 
 ```bash
-cd firmware
-make            # builds the main firmware binary and tests
+docker-compose up -d
 ```
 
-This will produce `build/bin/sentryflow_firmware`, a non-blocking TCP server that speaks SentryFlow’s framed binary protocol (see `docs/PROTOCOL.md`).
-
-### Run the Firmware Locally
-
-```bash
-cd firmware
-make run        # or ./build/bin/sentryflow_firmware
-```
-
-By default, the firmware listens on port 9000 and handles framed messages like `PING`, `ECHO`, `GET_STATS`, and route update/lookup commands.
+Then open **http://localhost:3000** for the UI. API: **http://localhost:8000/api**.
 
 ---
 
-## Python Tooling & Automation
+## Quick start (local dev)
 
-### Install Python Dependencies
+1. **Engine (C++)**  
+   `cd firmware && make && ./build/bin/sentryflow_firmware --bind 0.0.0.0 --port 9000`
+
+2. **API (Python)**  
+   `pip install -r api/requirements.txt`  
+   `PYTHONPATH=$PWD:$PWD/tools python -m uvicorn api.main:app --host 0.0.0.0 --port 8000`
+
+3. **Frontend (React)**  
+   `cd frontend && npm install && npm run dev`  
+   Open http://localhost:3000
+
+---
+
+## Python tooling & automation
 
 ```bash
 cd tools
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+.venv\Scripts\activate   # or source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Generate Traffic (1000+ Requests/Day Simulation)
-
-```bash
-cd tools
-python traffic_generator.py --host 127.0.0.1 --port 9000 --requests 1500
-```
-
-This script opens concurrent TCP connections to the firmware service and drives a workload that can be scaled well beyond 1000 requests/day for stress testing.
-
-### Measure Latency (\< 100ms Target)
-
-```bash
-cd tools
-python latency_benchmark.py --host 127.0.0.1 --port 9000 --requests 500
-```
-
-The benchmark script records per‑request latency and prints summary statistics (min/median/p95). For local runs on a reasonable machine, the goal is to keep median latency under 100ms.
+| Script | Purpose |
+|--------|---------|
+| `traffic_generator.py` | Generate 1000+ requests to the simulation engine |
+| `latency_benchmark.py` | Measure min/median/P95 latency (&lt; 100 ms target) |
+| `validate_simulation.py` | Validate engine (PING, ECHO, STATS, latency) |
+| `ci_checks.py` | CI: syntax checks + pytest |
+| `pytest tests/` | Protocol and API tests |
 
 ---
 
-## CI/CD & DevSecOps
+## Tech stack (resume-aligned)
 
-### Jenkins
-
-The `Jenkinsfile` defines a declarative pipeline with stages such as:
-
-- **Checkout** – fetch repository sources
-- **Build Firmware** – `make -C firmware`
-- **Run Tests** – `make -C firmware test`
-- **Python Tooling Checks** – `pip install -r tools/requirements.txt` + run `ci_checks.py`
-- **Security/Static Checks** – example hooks for `cppcheck`, `clang-tidy`, or dependency scanning
-
-This demonstrates CI/CD integration for C firmware and Python tooling on an embedded‑style codebase.
-
-### GitHub Actions
-
-The workflow at `.github/workflows/ci.yml` mirrors the Jenkins stages for GitHub‑native CI:
-
-- Triggered on pushes and pull requests to `main`
-- Builds and tests C firmware
-- Runs Python checks and basic security checks
+- **Frontend:** React, TypeScript, HTML5, JavaScript (ES6) – supports 1000+ users  
+- **Backend / API:** Python (FastAPI)  
+- **Simulation engine:** C++ (firmware), Java (validation service)  
+- **Automation & testing:** Python (pytest, validation scripts)  
+- **Deployment:** Docker, Docker Compose  
+- **Documentation:** Technical docs, API reference, tutorials, QA processes  
 
 ---
 
-## Hardware–Software Integration Layer
+## Documentation
 
-The `platform` components inside `firmware/src` and `firmware/include` are structured as a **hardware abstraction layer (HAL)**:
-
-- Platform‑agnostic protocol and routing logic lives in `protocol_stack.*` and `routing.*`
-- Platform‑specific implementations (Linux / embedded Linux) live in `platform_linux.*`
-- This separation makes it straightforward to port the stack to other boards or RTOSes by implementing a new platform module.
-
-Python tools can communicate with the firmware over TCP or serial‑like interfaces, demonstrating a basic hardware–software integration story suitable for portfolio and interview discussions.
+- [Architecture](docs/ARCHITECTURE.md) – Firmware and stack layout  
+- [Protocol](docs/PROTOCOL.md) – Binary frame format and message types  
+- [Routing](docs/ROUTING.md) – Routing table and LPM  
+- [API reference](docs/API.md) – REST endpoints  
+- [Tutorial](docs/TUTORIAL.md) – Full stack and UI walkthrough  
+- [QA](docs/QA.md) – Testing and release checklist  
 
 ---
 
-## Notes
+## CI/CD
 
-- This repository is designed as a **showcase project**, not as a drop‑in production networking stack.
-- The focus is on clean structure, realistic build/test automation, and clear mapping to the bullet points:
-  - C/C++ network protocol stack on embedded Linux
-  - Routing protocol hooks
-  - Firmware + low‑level software
-  - Python/Bash automation
-  - Jenkins + GitHub Actions CI/CD with DevSecOps hooks
+- **GitHub Actions** (`.github/workflows/ci.yml`) – Build firmware, run tests, Python checks  
+- **Jenkins** (`Jenkinsfile`) – Pipeline for build, test, and security/static checks  
 
+---
+
+## License
+
+See [LICENSE](LICENSE).
